@@ -1,5 +1,4 @@
 {
-  "name": "Vite_vanilla-app-template",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -18,11 +17,12 @@
   "author": " <@gmail.com>",
   "license": "ISC",
   "dependencies": {
-    "gh-pages": "^6.3.0",
     "body": "^5.1.0",
     "body-scroll-lock": "^4.0.0-beta.0",
+    "gh-pages": "^6.3.0",
     "skroll": "^1.4.3",
     "swiper": "^10.0.4",
+    "tui-pagination": "^3.4.1",
     "vite-plugin-full-reload": "^1.0.5",
     "vite-plugin-html-inject": "^1.0.1"
   }

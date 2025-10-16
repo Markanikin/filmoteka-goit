@@ -5,13 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Filmoteka</title>
     <link rel="stylesheet" href="./css/styles.css" />
+    <link rel="stylesheet" href="node_modules/tui-pagination/dist/tui-pagination.css">
   </head>
   <body>
-    
-   <h1>Filmoteka</h1>
-  <input type="text" id="search" placeholder="Enter movie name" />
-  <button id="searchBtn">Search</button>
-  <div id="results"></div>
+   <div id="header">
+   
+     <h1> <img src="./img/free-icon-3d-glasses-5701545.png" alt="#" class="icon">Filmoteka</h1>
+    <div class="filmoteka-header">
+      <input type="text" id="search" placeholder="Enter movie name" />
+      <button id="searchBtn">Search</button>
+      <select id="ratingFilter">
+        <option value="">All ratings</option>
+        <option value="8.0">8.0+</option>
+        <option value="7.0">7.0+</option>
+        <option value="6.0">6.0+</option>
+      </select>
+    </div>
+   </div>
+    <div id="results"></div>
+    <div id="pagination"></div>
     <script type="module" src="main.js"></script>
   </body>
 </html>
