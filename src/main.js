@@ -11,15 +11,39 @@ const button = document.getElementById('searchBtn');
 const ratingFilter = document.getElementById('ratingFilter');
 const results = document.getElementById('results');
 const paginationContainer = document.getElementById('pagination');
+const loaderWrapper = document.getElementById('loader-wrapper');
 
 // === Глобальні змінні ===
 let currentQuery = DEFAULT_QUERY;
 let paginationInstance = null;
+let loaderStartTime = 0;
+
+// === Показати/сховати лоадер ===
+function showLoader() {
+  loaderStartTime = Date.now();
+  loaderWrapper.style.display = 'flex';
+  results.innerHTML = '';
+  paginationContainer.innerHTML = '';
+}
+
+function hideLoader(callback) {
+  const elapsedTime = Date.now() - loaderStartTime;
+  const remainingTime = Math.max(0, 2000 - elapsedTime);
+  
+  setTimeout(() => {
+    loaderWrapper.style.display = 'none';
+    if (callback) callback();
+  }, remainingTime);
+}
 
 // === Ініціалізація пагінації ===
 function initPagination(totalItems, currentPage = 1) {
   if (paginationContainer) {
     paginationContainer.innerHTML = '';
+  }
+
+  if (paginationInstance) {
+    paginationInstance.reset();
   }
 
   paginationInstance = new Pagination(paginationContainer, {
@@ -38,6 +62,7 @@ function initPagination(totalItems, currentPage = 1) {
 
 // === Завантаження сторінки фільмів ===
 function loadMoviesPage(query, page) {
+  showLoader();
   fetch(
     `https://www.omdbapi.com/?s=${encodeURIComponent(
       query
@@ -49,18 +74,24 @@ function loadMoviesPage(query, page) {
         const ids = data.Search.map(m => m.imdbID);
         displayMoviesByIds(ids);
       } else {
-        results.innerHTML = '<p>No movies found</p>';
+        hideLoader(() => {
+          results.innerHTML = '<p>No movies found</p>';
+        });
       }
     })
     .catch(() => {
-      results.innerHTML = '<p>Error loading movies</p>';
+      hideLoader(() => {
+        results.innerHTML = '<p>Error loading movies</p>';
+      });
     });
 }
 
 // === Відображення фільмів за imdbID ===
 function displayMoviesByIds(imdbIds) {
   if (imdbIds.length === 0) {
-    results.innerHTML = '<p>No movies found</p>';
+    hideLoader(() => {
+      results.innerHTML = '<p>No movies found</p>';
+    });
     return;
   }
 
@@ -81,10 +112,13 @@ function displayMoviesByIds(imdbIds) {
         });
       }
       if (filtered.length === 0) {
-        results.innerHTML = '<p>No movies match the rating filter</p>';
+        hideLoader(() => {
+          results.innerHTML = '<p>No movies match the rating filter</p>';
+        });
         return;
       }
-      results.innerHTML = filtered
+      
+      const moviesHTML = filtered
         .map(
           movie => `
         <div class="movie-card">
@@ -104,16 +138,45 @@ function displayMoviesByIds(imdbIds) {
       `
         )
         .join('');
+      
+      hideLoader(() => {
+        results.innerHTML = moviesHTML;
+      });
     })
     .catch(() => {
-      results.innerHTML = '<p>Error loading movies</p>';
+      hideLoader(() => {
+        results.innerHTML = '<p>Error loading movies</p>';
+      });
     });
 }
 
 // === Пошук або завантаження за замовчуванням ===
 function handleSearch(query) {
   currentQuery = query.trim() || DEFAULT_QUERY;
-  loadMoviesPage(currentQuery, 1);
+  showLoader();
+  
+  fetch(`https://www.omdbapi.com/?s=${encodeURIComponent(currentQuery)}&apikey=${API_KEY}`)
+    .then(response => response.json())
+    .then(data => {
+      if (data.Response === 'True') {
+        const ids = data.Search.map(m => m.imdbID);
+        displayMoviesByIds(ids);
+        const total = parseInt(data.totalResults);
+        hideLoader(() => {
+          initPagination(total, 1);
+        });
+      } else {
+        hideLoader(() => {
+          results.innerHTML = '<p>No movies found</p>';
+          if (paginationContainer) paginationContainer.innerHTML = '';
+        });
+      }
+    })
+    .catch(() => {
+      hideLoader(() => {
+        results.innerHTML = '<p>Error loading movies</p>';
+      });
+    });
 }
 
 // === Події ===
@@ -125,7 +188,8 @@ ratingFilter.addEventListener('change', () => {
   handleSearch(currentQuery);
 });
 
-// === Початкове завантаження (за замовчуванням) ===
+// === Початкове завантаження з лоадером ===
+showLoader();
 fetch(`https://www.omdbapi.com/?s=${DEFAULT_QUERY}&apikey=${API_KEY}`)
   .then(response => response.json())
   .then(data => {
@@ -133,52 +197,17 @@ fetch(`https://www.omdbapi.com/?s=${DEFAULT_QUERY}&apikey=${API_KEY}`)
       const ids = data.Search.map(m => m.imdbID);
       displayMoviesByIds(ids);
       const total = parseInt(data.totalResults);
-      initPagination(total, 1);
+      hideLoader(() => {
+        initPagination(total, 1);
+      });
     } else {
-      results.innerHTML = '<p>No movies found</p>';
+      hideLoader(() => {
+        results.innerHTML = '<p>No movies found</p>';
+      });
     }
   })
   .catch(() => {
-    results.innerHTML = '<p>Error loading default movies</p>';
-  });
-// === Пошук фільмів ===
-function searchMovies(query) {
-  currentQuery = query;
-  if (query === '') {
-    displayMoviesByIds(TOP_MOVIES);
-    if (paginationContainer) paginationContainer.innerHTML = '';
-    return;
-  }
-  fetch(
-    `https://www.omdbapi.com/?s=${encodeURIComponent(query)}&apikey=${API_KEY}`
-  )
-    .then(response => response.json())
-    .then(data => {
-      if (data.Response === 'True') {
-        const ids = data.Search.map(m => m.imdbID);
-        displayMoviesByIds(ids);
-        const total = Math.min(parseInt(data.totalResults), 100);
-        initPagination(total, 1);
-      } else {
-        results.innerHTML = '<p>No movies found</p>';
-        if (paginationContainer) paginationContainer.innerHTML = '';
-      }
-    })
-    .catch(() => {
-      results.innerHTML = '<p>Error loading movies</p>';
+    hideLoader(() => {
+      results.innerHTML = '<p>Error loading default movies</p>';
     });
-}
-
-button.addEventListener('click', () => searchMovies(input.value));
-input.addEventListener('keypress', e => {
-  if (e.key === 'Enter') searchMovies(input.value);
-});
-ratingFilter.addEventListener('change', () => {
-  if (currentQuery === '') {
-    displayMoviesByIds(TOP_MOVIES);
-  } else {
-    searchMovies(currentQuery);
-  }
-});
-
-displayMoviesByIds(TOP_MOVIES);
+  });

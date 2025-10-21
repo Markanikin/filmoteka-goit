@@ -5,23 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Filmoteka</title>
     <link rel="stylesheet" href="./css/styles.css" />
-    <link rel="stylesheet" href="node_modules/tui-pagination/dist/tui-pagination.css">
+    <link
+      rel="stylesheet"
+      href="node_modules/tui-pagination/dist/tui-pagination.css"
+    />
   </head>
   <body>
-   <div id="header">
-   
-     <h1> <img src="./img/free-icon-3d-glasses-5701545.png" alt="#" class="icon">Filmoteka</h1>
-    <div class="filmoteka-header">
-      <input type="text" id="search" placeholder="Enter movie name" />
-      <button id="searchBtn">Search</button>
-      <select id="ratingFilter">
-        <option value="">All ratings</option>
-        <option value="8.0">8.0+</option>
-        <option value="7.0">7.0+</option>
-        <option value="6.0">6.0+</option>
-      </select>
+    <div id="header">
+      <h1>GoITeens-Filmoteka</h1>
+      <div class="filmoteka-header">
+        <input type="text" id="search" placeholder="Enter movie name" />
+        <button id="searchBtn">Search</button>
+        <select id="ratingFilter">
+          <option value="">All ratings</option>
+          <option value="8.0">8.0+</option>
+          <option value="7.0">7.0+</option>
+          <option value="6.0">6.0+</option>
+        </select>
+      </div>
     </div>
-   </div>
+    <div id="loader-wrapper" class="loader-wrapper" style="display: none">
+      <span class="loader-letter">S</span>
+      <span class="loader-letter">e</span>
+      <span class="loader-letter">a</span>
+      <span class="loader-letter">r</span>
+      <span class="loader-letter">c</span>
+      <span class="loader-letter">h</span>
+      <span class="loader-letter">i</span>
+      <span class="loader-letter">n</span>
+      <span class="loader-letter">g</span>
+      <div class="loader"></div>
+    </div>
     <div id="results"></div>
     <div id="pagination"></div>
     <script type="module" src="main.js"></script>
